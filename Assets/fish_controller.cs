@@ -1,4 +1,4 @@
-using UnityEngine;
+﻿using UnityEngine;
 
 public class fish_controller : MonoBehaviour
 {
@@ -9,6 +9,20 @@ public class fish_controller : MonoBehaviour
     public float jumpower = 10f;
 
     private Vector2 input;
+
+    public float diveSpeed = 3f;          // 潛水速度
+    public float floatUpSpeed = 2f;       // 平常上浮速度
+    public float waterSurfaceY = 0f;      // 水面高度
+    public float maxDiveDepth = -10f;     // 最大深度
+
+    [Header("Jump Out Settings")]
+    public float jumpOutHeight = 1.5f;    // 跳出水面高度
+    public float jumpOutSpeed = 6f;       // 往上彈出的速度
+    public float gravity = 10f;           // 回落速度（重力感）
+
+    private bool wasDiving = false;       // 用來偵測 "剛放開空白鍵"
+    private float verticalVelocity = 0f;
+
 
     void Update()
     {
@@ -21,7 +35,7 @@ public class fish_controller : MonoBehaviour
         transform.Rotate(Vector3.up, input.x * turnSpeed * Time.deltaTime);
 
         //dive&jump
-
+        /*
         if (Input.GetKeyDown(KeyCode.Space))
         {
             transform.position -= transform.up * Time.deltaTime * diveHeight;
@@ -33,6 +47,58 @@ public class fish_controller : MonoBehaviour
 
             rigidbody.AddForce(Vector3.up * jumpower);
         }
+        */
+
+        bool isDiving = Input.GetKey(KeyCode.Space);
+        Vector3 pos = transform.position;
+
+        // 1. ➤ 潛水階段
+        if (isDiving)
+        {
+            pos.y -= diveSpeed * Time.deltaTime;
+
+            if (pos.y < maxDiveDepth)
+                pos.y = maxDiveDepth;
+
+            wasDiving = true;
+            verticalVelocity = 0; // 潛水時不累積往上的速度
+        }
+        else
+        {
+            // 2. ➤ 剛放開空白鍵 → 給一個往上衝的速度
+            if (wasDiving)
+            {
+                verticalVelocity = jumpOutSpeed; // 往上衝
+                wasDiving = false;
+            }
+
+            // 3. ➤ 若有跳出速度 → 執行跳出 + 重力
+            if (verticalVelocity > 0)
+            {
+                pos.y += verticalVelocity * Time.deltaTime;
+                verticalVelocity -= gravity * Time.deltaTime;
+
+                // 限制最高跳出位置
+                if (pos.y >= waterSurfaceY + jumpOutHeight)
+                {
+                    pos.y = waterSurfaceY + jumpOutHeight;
+                    verticalVelocity = 0; // 到頂就往下掉
+                }
+            }
+            else
+            {
+                // 4. ➤ 已經跳完、慢慢回到水面
+                pos.y -= gravity * Time.deltaTime;
+
+                if (pos.y <= waterSurfaceY)
+                {
+                    pos.y = waterSurfaceY;
+                    verticalVelocity = 0;
+                }
+            }
+        }
+
+        transform.position = pos;
 
     }
 }
