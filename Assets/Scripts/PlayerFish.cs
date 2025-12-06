@@ -36,10 +36,10 @@ public class PlayerFish : MonoBehaviour
         {
             Seaweed seaweed = collider.GetComponent<Seaweed>();
 
-            if (seaweed != null && seaweed.HasFood())
+            if (seaweed != null && seaweed.IsEatable())
             {
                 // 吃掉這株水草
-                if (seaweed.GetEaten())
+                if (seaweed.IsGetEaten())
                 {
                     // 主角魚吃水草會長大
                     Grow(_growthPerBite);
