@@ -24,6 +24,9 @@ public class fish_controller : MonoBehaviour
     private float verticalVelocity = 0f;
 
 
+    public AudioSource jumpSFX;
+
+
     void Update()
     {
         input = new Vector2(Input.GetAxis("Horizontal"), Input.GetAxis("Vertical"));
@@ -70,6 +73,9 @@ public class fish_controller : MonoBehaviour
             {
                 verticalVelocity = jumpOutSpeed; // 往上衝
                 wasDiving = false;
+
+                //跳出水面音效
+                jumpSFX.Play();
             }
 
             // 3. ➤ 若有跳出速度 → 執行跳出 + 重力
@@ -97,6 +103,8 @@ public class fish_controller : MonoBehaviour
                 }
             }
         }
+
+        
 
         transform.position = pos;
 

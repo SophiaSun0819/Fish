@@ -11,6 +11,10 @@ public class PlayerFish : MonoBehaviour
     [Header("吃東西設定")]
     [SerializeField] private float _eatRange = 2f;
 
+
+    public AudioSource eatNothingSFX;
+    public AudioSource eatSeedweedSFX;
+
     void Start()
     {
         UpdateFishSize();
@@ -30,6 +34,9 @@ public class PlayerFish : MonoBehaviour
     /// </summary>
     private void EatSeaweed()
     {
+
+        
+
         Collider[] hitColliders = Physics.OverlapSphere(transform.position, _eatRange);
 
         foreach (Collider collider in hitColliders)
@@ -38,6 +45,9 @@ public class PlayerFish : MonoBehaviour
 
             if (seaweed != null && seaweed.IsEatable())
             {
+                //吃水草音效
+                eatSeedweedSFX.Play();
+
                 // 吃掉這株水草
                 if (seaweed.IsGetEaten())
                 {
@@ -48,6 +58,8 @@ public class PlayerFish : MonoBehaviour
             }
         }
 
+        //沒吃到音效
+        eatNothingSFX.Play();
         Debug.Log("沒有水草可以吃！");
     }
 
