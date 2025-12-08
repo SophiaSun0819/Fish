@@ -45,7 +45,7 @@ public class fish_controller : MonoBehaviour
     void Update()
     {
 
-        ApplySquashStretch();
+        //ApplySquashStretch();
 
         input = new Vector2(Input.GetAxis("Horizontal"), Input.GetAxis("Vertical"));
 
