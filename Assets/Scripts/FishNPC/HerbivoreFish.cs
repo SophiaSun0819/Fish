@@ -39,6 +39,7 @@ public class HerbivoreFish : NPCFish
         base.Start();
         SetNewWanderTarget();
         _hungerTimer = _hungerThreshold;
+        _stateTimer = _wanderTime; // 初始化漫遊超時計時器
     }
 
     protected override void Update()
@@ -77,11 +78,15 @@ public class HerbivoreFish : NPCFish
 
         MoveToTarget(_wanderTarget);
 
-        // 到達目標點或時間到了設定新的漫遊點
-        float distance = Vector3.Distance(transform.position, _wanderTarget);
-        if (distance < 1f)
+        // 更新狀態計時器（用於超時檢測）
+        _stateTimer -= Time.deltaTime;
+
+        // 到達目標點或超時就設定新的漫遊點
+        float distance = Vector3.Distance(GetFishPosition(), _wanderTarget);
+        if (distance < 1f || _stateTimer <= 0)
         {
             SetNewWanderTarget();
+            _stateTimer = _wanderTime; // 重置超時計時器
         }
     }
 
@@ -130,6 +135,7 @@ public class HerbivoreFish : NPCFish
         {
             case FishState.Wandering:
                 SetNewWanderTarget();
+                _stateTimer = _wanderTime; // 設定漫遊超時時間
                 Debug.Log($"{gameObject.name}: 開始漫遊");
                 break;
             case FishState.Seeking:
@@ -151,27 +157,16 @@ public class HerbivoreFish : NPCFish
     private void SetNewWanderTarget()
     {
         // 在當前位置附近隨機一個點
+        Vector3 currentPos = GetFishPosition();
         Vector2 randomCircle = Random.insideUnitCircle * _wanderRadius;
-        _wanderTarget = transform.position + new Vector3(randomCircle.x, 0, randomCircle.y);
-        _wanderTarget.y = transform.position.y; // 保持相同高度
+        _wanderTarget = currentPos + new Vector3(randomCircle.x, 0, randomCircle.y);
+        _wanderTarget.y = currentPos.y; // 保持相同高度
     }
 
     private void MoveToTarget(Vector3 target)
     {
-        Vector3 direction = (target - transform.position).normalized;
-        direction.y = 0;
-
-        if (direction != Vector3.zero)
-        {
-            transform.position += direction * _moveSpeed * Time.deltaTime;
-
-            Quaternion targetRotation = Quaternion.LookRotation(direction);
-            transform.rotation = Quaternion.RotateTowards(
-                transform.rotation,
-                targetRotation,
-                _turnSpeed * Time.deltaTime
-            );
-        }
+        // 使用父類別的 MoveToPosition 方法來移動頭部節點
+        MoveToPosition(target);
     }
 
     /// <summary>
@@ -179,7 +174,8 @@ public class HerbivoreFish : NPCFish
     /// </summary>
     protected override void FindTarget()
     {
-        Collider[] colliders = Physics.OverlapSphere(transform.position, _detectionRange);
+        Vector3 fishPos = GetFishPosition();
+        Collider[] colliders = Physics.OverlapSphere(fishPos, _detectionRange);
 
         float closestDistance = Mathf.Infinity;
         Transform closestSeaweed = null;
@@ -190,7 +186,7 @@ public class HerbivoreFish : NPCFish
 
             if (seaweed != null && seaweed.IsEatable())
             {
-                float distance = Vector3.Distance(transform.position, col.transform.position);
+                float distance = Vector3.Distance(fishPos, col.transform.position);
 
                 if (distance < closestDistance)
                 {
@@ -207,7 +203,7 @@ public class HerbivoreFish : NPCFish
     {
         if (_currentTarget == null) return;
 
-        float distance = Vector3.Distance(transform.position, _currentTarget.position);
+        float distance = Vector3.Distance(GetFishPosition(), _currentTarget.position);
 
         if (distance <= _eatRange)
         {
@@ -256,16 +252,19 @@ public class HerbivoreFish : NPCFish
     {
         base.OnDrawGizmosSelected();
 
+        // 使用魚的實際位置
+        Vector3 fishPos = Application.isPlaying ? GetFishPosition() : transform.position;
+
         // 藍色圈：漫遊範圍
         Gizmos.color = Color.blue;
-        Gizmos.DrawWireSphere(transform.position, _wanderRadius);
+        Gizmos.DrawWireSphere(fishPos, _wanderRadius);
 
         // 粉色球：當前漫遊目標
         if (_currentState == FishState.Wandering && Application.isPlaying)
         {
             Gizmos.color = Color.magenta;
             Gizmos.DrawSphere(_wanderTarget, 0.3f);
-            Gizmos.DrawLine(transform.position, _wanderTarget);
+            Gizmos.DrawLine(fishPos, _wanderTarget);
         }
     }
 }
