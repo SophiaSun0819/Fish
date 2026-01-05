@@ -2,42 +2,44 @@ using UnityEngine;
 using System.Collections.Generic;
 
 /// <summary>
-/// 飼料魚 - 群聚行為、快速移動、會逃跑
-/// 行為模式：
-/// 1. 群聚移動（Flocking）
-/// 2. 逃跑（發現玩家或掠食者時）
-/// 不吃水草也不吃其他魚，只會被吃
+/// 飼料魚 - 群聚行為、會逃跑
+/// 使用父類別的平滑避障
 /// </summary>
 public class PreyFish : NPCFish
 {
     [Header("飼料魚特性")]
-    [SerializeField] private float _normalSpeed = 3f;       // 正常速度
-    [SerializeField] private float _fleeSpeed = 8f;         // 逃跑速度
-    [SerializeField] private float _fleeDistance = 3f;      // 開始逃跑的距離
-    [SerializeField] private float _safeDistance = 8f;      // 安全距離（超過就停止逃跑）
+    [SerializeField] private float _normalSpeed = 3f;
+    [SerializeField] private float _fleeSpeed = 6f;
+    [SerializeField] private float _fleeDistance = 3f;
+    [SerializeField] private float _safeDistance = 8f;
     
     [Header("群聚設定 (Flocking)")]
-    [SerializeField] private float _neighborRadius = 4f;    // 鄰居感知半徑
-    [SerializeField] private float _separationWeight = 1.5f;  // 分離權重
-    [SerializeField] private float _alignmentWeight = 1f;   // 對齊權重
-    [SerializeField] private float _cohesionWeight = 1f;    // 聚合權重
-    [SerializeField] private float _separationDistance = 1f; // 分離距離
+    [SerializeField] private float _neighborRadius = 4f;
+    [SerializeField] private float _separationWeight = 1.5f;
+    [SerializeField] private float _alignmentWeight = 1f;
+    [SerializeField] private float _cohesionWeight = 1f;
+    [SerializeField] private float _separationDistance = 1f;
     
     [Header("漫遊設定")]
-    [SerializeField] private float _wanderRadius = 10f;     // 漫遊範圍
-    [SerializeField] private float _wanderStrength = 0.5f;  // 漫遊強度
+    [SerializeField] private float _wanderInterval = 2f;     // 改變漫遊方向的間隔
+    [SerializeField] private float _wanderStrength = 0.3f;
 
     private Vector3 _currentVelocity;
-    private Transform _threatTarget;  // 威脅目標
+    private Vector3 _wanderDirection;
+    private float _wanderTimer;
+    private Transform _threatTarget;
     private PreyState _currentState = PreyState.Schooling;
     
-    // 靜態列表，用於追蹤所有飼料魚（用於群聚計算）
+    // 平滑用
+    private Vector3 _smoothedVelocity;
+    private Vector3 _velocityRef;
+    
     private static List<PreyFish> _allPreyFish = new List<PreyFish>();
 
     private enum PreyState
     {
-        Schooling,  // 群聚游動
-        Fleeing     // 逃跑
+        Schooling,
+        Fleeing
     }
 
     protected override void Start()
@@ -45,6 +47,10 @@ public class PreyFish : NPCFish
         base.Start();
         _allPreyFish.Add(this);
         _currentVelocity = transform.forward * _normalSpeed;
+        _smoothedVelocity = _currentVelocity;
+        _wanderDirection = Random.insideUnitSphere;
+        _wanderDirection.y = 0;
+        _wanderDirection = _wanderDirection.normalized;
     }
 
     private void OnDestroy()
@@ -54,8 +60,10 @@ public class PreyFish : NPCFish
 
     protected override void Update()
     {
-        // 檢查威脅
+        if (_isDead) return;
+        
         CheckForThreats();
+        UpdateWanderDirection();
 
         switch (_currentState)
         {
@@ -67,13 +75,24 @@ public class PreyFish : NPCFish
                 break;
         }
 
-        // 應用移動
         ApplyMovement();
     }
 
     /// <summary>
-    /// 檢查附近是否有威脅
+    /// 定時更新漫遊方向（避免每幀隨機造成抖動）
     /// </summary>
+    private void UpdateWanderDirection()
+    {
+        _wanderTimer -= Time.deltaTime;
+        if (_wanderTimer <= 0)
+        {
+            _wanderDirection = Random.insideUnitSphere;
+            _wanderDirection.y = 0;
+            _wanderDirection = _wanderDirection.normalized;
+            _wanderTimer = _wanderInterval;
+        }
+    }
+
     private void CheckForThreats()
     {
         Vector3 myPos = GetFishPosition();
@@ -84,7 +103,6 @@ public class PreyFish : NPCFish
         
         foreach (Collider col in colliders)
         {
-            // 檢查是不是玩家
             PlayerFishController player = col.GetComponent<PlayerFishController>();
             if (player != null)
             {
@@ -97,7 +115,6 @@ public class PreyFish : NPCFish
                 continue;
             }
 
-            // 檢查是不是肉食魚
             CarnivoreFish carnivore = col.GetComponent<CarnivoreFish>();
             if (carnivore != null && carnivore.GetSize() >= _currentSize)
             {
@@ -112,90 +129,87 @@ public class PreyFish : NPCFish
 
         _threatTarget = closestThreat;
 
-        // 根據威脅距離決定狀態
         if (_threatTarget != null && closestThreatDist <= _fleeDistance)
         {
             if (_currentState != PreyState.Fleeing)
             {
-                ChangeState(PreyState.Fleeing);
+                _currentState = PreyState.Fleeing;
             }
         }
         else if (_currentState == PreyState.Fleeing && 
                  (_threatTarget == null || closestThreatDist > _safeDistance))
         {
-            ChangeState(PreyState.Schooling);
+            _currentState = PreyState.Schooling;
         }
     }
 
-    /// <summary>
-    /// 群聚游動狀態
-    /// </summary>
     private void UpdateSchooling()
     {
         Vector3 separation = CalculateSeparation();
         Vector3 alignment = CalculateAlignment();
         Vector3 cohesion = CalculateCohesion();
-        Vector3 wander = CalculateWander();
 
-        // 組合所有力
-        Vector3 acceleration = 
+        // 計算目標速度（不再每幀隨機）
+        Vector3 targetVelocity = 
             separation * _separationWeight +
             alignment * _alignmentWeight +
             cohesion * _cohesionWeight +
-            wander * _wanderStrength;
+            _wanderDirection * _wanderStrength;
 
-        // 更新速度
-        _currentVelocity += acceleration * Time.deltaTime;
-        _currentVelocity = Vector3.ClampMagnitude(_currentVelocity, _normalSpeed);
-        
-        // 保持在水平面
-        _currentVelocity.y = 0;
+        // 如果沒有其他力量，保持當前方向
+        if (targetVelocity.magnitude < 0.1f)
+        {
+            targetVelocity = _currentVelocity.normalized;
+        }
+
+        targetVelocity = targetVelocity.normalized * _normalSpeed;
+        targetVelocity.y = 0;
+
+        _currentVelocity = targetVelocity;
     }
 
-    /// <summary>
-    /// 逃跑狀態
-    /// </summary>
     private void UpdateFleeing()
     {
         if (_threatTarget == null)
         {
-            ChangeState(PreyState.Schooling);
+            _currentState = PreyState.Schooling;
             return;
         }
 
-        // 計算逃跑方向（遠離威脅）
         Vector3 fleeDirection = (GetFishPosition() - _threatTarget.position).normalized;
         fleeDirection.y = 0;
 
-        // 加入一點隨機性，讓逃跑路線不那麼直線
-        Vector3 randomness = new Vector3(
-            Random.Range(-0.3f, 0.3f),
-            0,
-            Random.Range(-0.3f, 0.3f)
-        );
-        fleeDirection = (fleeDirection + randomness).normalized;
-
-        // 更新速度為逃跑方向
         _currentVelocity = fleeDirection * _fleeSpeed;
     }
 
-    /// <summary>
-    /// 應用移動
-    /// </summary>
     private void ApplyMovement()
     {
-        if (_currentVelocity.magnitude < 0.1f)
+        // 加入避障
+        Vector3 avoidDirection = CalculateAvoidDirection();
+        Vector3 desiredVelocity = _currentVelocity;
+        
+        if (avoidDirection != Vector3.zero)
         {
-            _currentVelocity = transform.forward * _normalSpeed * 0.5f;
+            desiredVelocity = (_currentVelocity.normalized + avoidDirection * _avoidStrength).normalized;
+            float speed = _currentState == PreyState.Fleeing ? _fleeSpeed : _normalSpeed;
+            desiredVelocity *= speed;
         }
 
-        // 移動
-        SetFishPosition(GetFishPosition() + _currentVelocity * Time.deltaTime);
+        // 平滑速度變化（這是關鍵！）
+        _smoothedVelocity = Vector3.SmoothDamp(
+            _smoothedVelocity,
+            desiredVelocity,
+            ref _velocityRef,
+            _smoothTime
+        );
 
-        // 旋轉朝向移動方向
-        if (_currentVelocity != Vector3.zero)
+        // 移動
+        SetFishPosition(GetFishPosition() + _smoothedVelocity * Time.deltaTime);
+
+        // 旋轉（使用平滑後的速度）
+        if (_smoothedVelocity.magnitude > 0.1f)
         {
-            Quaternion targetRotation = Quaternion.LookRotation(_currentVelocity.normalized);
+            Quaternion targetRotation = Quaternion.LookRotation(_smoothedVelocity.normalized);
             SetFishRotation(Quaternion.RotateTowards(
                 GetFishRotation(),
                 targetRotation,
@@ -204,11 +218,8 @@ public class PreyFish : NPCFish
         }
     }
 
-    #region Flocking 計算
+    #region Flocking
 
-    /// <summary>
-    /// 計算分離力 - 避免與鄰居太靠近
-    /// </summary>
     private Vector3 CalculateSeparation()
     {
         Vector3 separation = Vector3.zero;
@@ -224,23 +235,16 @@ public class PreyFish : NPCFish
             if (distance < _separationDistance && distance > 0)
             {
                 Vector3 diff = myPos - other.GetFishPosition();
-                diff /= distance; // 距離越近，力越大
+                diff /= distance;
                 separation += diff;
                 count++;
             }
         }
 
-        if (count > 0)
-        {
-            separation /= count;
-        }
-
+        if (count > 0) separation /= count;
         return separation;
     }
 
-    /// <summary>
-    /// 計算對齊力 - 與鄰居方向一致
-    /// </summary>
     private Vector3 CalculateAlignment()
     {
         Vector3 alignment = Vector3.zero;
@@ -255,7 +259,7 @@ public class PreyFish : NPCFish
             
             if (distance < _neighborRadius)
             {
-                alignment += other._currentVelocity.normalized;
+                alignment += other._smoothedVelocity.normalized;  // 使用平滑後的速度
                 count++;
             }
         }
@@ -265,13 +269,9 @@ public class PreyFish : NPCFish
             alignment /= count;
             alignment = alignment.normalized;
         }
-
         return alignment;
     }
 
-    /// <summary>
-    /// 計算聚合力 - 向群體中心移動
-    /// </summary>
     private Vector3 CalculateCohesion()
     {
         Vector3 center = Vector3.zero;
@@ -296,71 +296,23 @@ public class PreyFish : NPCFish
             center /= count;
             return (center - myPos).normalized;
         }
-
         return Vector3.zero;
-    }
-
-    /// <summary>
-    /// 計算漫遊力 - 隨機移動增加自然感
-    /// </summary>
-    private Vector3 CalculateWander()
-    {
-        // 在當前方向周圍隨機偏移
-        Vector3 wanderTarget = GetFishPosition() + transform.forward * 2f;
-        wanderTarget += new Vector3(
-            Random.Range(-_wanderRadius, _wanderRadius),
-            0,
-            Random.Range(-_wanderRadius, _wanderRadius)
-        ) * 0.1f;
-
-        return (wanderTarget - GetFishPosition()).normalized;
     }
 
     #endregion
 
-    /// <summary>
-    /// 切換狀態
-    /// </summary>
-    private void ChangeState(PreyState newState)
-    {
-        _currentState = newState;
+    #region Override Methods
 
-        switch (newState)
-        {
-            case PreyState.Schooling:
-                Debug.Log($"{gameObject.name}: 恢復群聚游動");
-                break;
-            case PreyState.Fleeing:
-                Debug.Log($"{gameObject.name}: 發現威脅，逃跑！");
-                break;
-        }
-    }
+    protected override void FindTarget() { }
 
-    #region 覆寫父類別方法
+    public override void Eat() { }
 
-    protected override void FindTarget()
-    {
-        // 飼料魚不主動尋找目標
-    }
-
-    public override void Eat()
-    {
-        // 飼料魚不吃東西
-    }
-
-    /// <summary>
-    /// 覆寫被吃的方法，可以加入特殊效果
-    /// </summary>
     public override float OnEaten(Transform eater)
     {
-        // 通知附近的同伴逃跑
         NotifyNearbyFish(eater);
         return base.OnEaten(eater);
     }
 
-    /// <summary>
-    /// 通知附近的飼料魚有危險
-    /// </summary>
     private void NotifyNearbyFish(Transform threat)
     {
         foreach (PreyFish other in _allPreyFish)
@@ -371,7 +323,7 @@ public class PreyFish : NPCFish
             if (distance < _neighborRadius * 2f)
             {
                 other._threatTarget = threat;
-                other.ChangeState(PreyState.Fleeing);
+                other._currentState = PreyState.Fleeing;
             }
         }
     }
@@ -384,22 +336,19 @@ public class PreyFish : NPCFish
 
         Vector3 fishPos = Application.isPlaying ? GetFishPosition() : transform.position;
 
-        // 紫色圈：鄰居感知半徑
         Gizmos.color = new Color(0.5f, 0f, 0.5f, 0.5f);
         Gizmos.DrawWireSphere(fishPos, _neighborRadius);
 
-        // 粉紅色圈：逃跑距離
         Gizmos.color = new Color(1f, 0.5f, 0.5f);
         Gizmos.DrawWireSphere(fishPos, _fleeDistance);
 
-        // 顯示速度方向
         if (Application.isPlaying)
         {
+            // 顯示平滑後的速度方向
             Gizmos.color = Color.green;
-            Gizmos.DrawRay(fishPos, _currentVelocity.normalized * 2f);
+            Gizmos.DrawRay(fishPos, _smoothedVelocity.normalized * 2f);
         }
 
-        // 逃跑時顯示威脅位置
         if (Application.isPlaying && _threatTarget != null && _currentState == PreyState.Fleeing)
         {
             Gizmos.color = Color.red;

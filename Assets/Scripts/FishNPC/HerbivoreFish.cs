@@ -1,31 +1,22 @@
 using UnityEngine;
 
 /// <summary>
-/// 素食魚
-/// 兩種主要行為模式
-/// 1.漫遊(移動速度慢)
-/// 2.吃水草
+/// 素食魚 - 吃水草、漫遊
+/// 使用射線避障
 /// </summary>
 public class HerbivoreFish : NPCFish
 {
     [Header("素食魚特性")]
-    [SerializeField]
-    private float _idleTime = 2f; // 吃完的休息時間
-    [SerializeField]
-    private float _wanderTime = 5f; // 漫遊時間
-    [SerializeField]
-    private float _wanderRadius = 10f; // 漫遊範圍
-    [SerializeField]
-    private float _hungerThreshold = 3f; // 多久會餓
+    [SerializeField] private float _idleTime = 2f;
+    [SerializeField] private float _wanderTime = 5f;
+    [SerializeField] private float _wanderRadius = 10f;
+    [SerializeField] private float _hungerThreshold = 3f;
 
-    private float _stateTimer = 0f; // 狀態計時器
-    private float _hungerTimer = 0f; // 飢餓計時器
+    private float _stateTimer = 0f;
+    private float _hungerTimer = 0f;
     private FishState _currentState = FishState.Wandering;
-    private Vector3 _wanderTarget; // 漫遊目標點
+    private Vector3 _wanderTarget;
 
-    /// <summary>
-    /// 魚的狀態
-    /// </summary>
     private enum FishState
     {
         Wandering,
@@ -39,12 +30,13 @@ public class HerbivoreFish : NPCFish
         base.Start();
         SetNewWanderTarget();
         _hungerTimer = _hungerThreshold;
-        _stateTimer = _wanderTime; // 初始化漫遊超時計時器
+        _stateTimer = _wanderTime;
     }
 
     protected override void Update()
     {
-        // 更新飢餓計時器
+        if (_isDead) return;
+        
         _hungerTimer -= Time.deltaTime;
 
         switch (_currentState)
@@ -64,29 +56,24 @@ public class HerbivoreFish : NPCFish
         }
     }
 
-    /// <summary>
-    /// 漫遊的狀態
-    /// </summary>
     private void UpdateWandering()
     {
-        // 如果餓了，切換到尋找食物狀態
         if (_hungerTimer <= 0)
         {
             ChangeState(FishState.Seeking);
             return;
         }
 
-        MoveToTarget(_wanderTarget);
+        // 使用父類別的 MoveToPosition（帶避障）
+        MoveToPosition(_wanderTarget);
 
-        // 更新狀態計時器（用於超時檢測）
         _stateTimer -= Time.deltaTime;
-
-        // 到達目標點或超時就設定新的漫遊點
         float distance = Vector3.Distance(GetFishPosition(), _wanderTarget);
+        
         if (distance < 1f || _stateTimer <= 0)
         {
             SetNewWanderTarget();
-            _stateTimer = _wanderTime; // 重置超時計時器
+            _stateTimer = _wanderTime;
         }
     }
 
@@ -96,19 +83,17 @@ public class HerbivoreFish : NPCFish
 
         if (_currentTarget != null)
         {
-            Move();
+            MoveToPosition(_currentTarget.position);
             TryEat();
         }
         else
         {
-            // 找不到食物，回到漫遊
             ChangeState(FishState.Wandering);
         }
     }
 
     private void UpdateEating()
     {
-        // 繼續吃
         TryEat();
     }
 
@@ -118,15 +103,10 @@ public class HerbivoreFish : NPCFish
 
         if (_stateTimer <= 0)
         {
-            // 休息結束，開始漫遊
             ChangeState(FishState.Wandering);
         }
     }
 
-    /// <summary>
-    /// 切換魚的狀態
-    /// </summary>
-    /// <param name="newState"></param>
     private void ChangeState(FishState newState)
     {
         _currentState = newState;
@@ -135,43 +115,22 @@ public class HerbivoreFish : NPCFish
         {
             case FishState.Wandering:
                 SetNewWanderTarget();
-                _stateTimer = _wanderTime; // 設定漫遊超時時間
-                Debug.Log($"{gameObject.name}: 開始漫遊");
-                break;
-            case FishState.Seeking:
-                Debug.Log($"{gameObject.name}: 尋找食物");
-                break;
-            case FishState.Eating:
-                Debug.Log($"{gameObject.name}: 開始進食");
+                _stateTimer = _wanderTime;
                 break;
             case FishState.Resting:
                 _stateTimer = _idleTime;
-                Debug.Log($"{gameObject.name}: 休息中");
                 break;
         }
     }
 
-    /// <summary>
-    /// 設定新的漫遊位置
-    /// </summary>
     private void SetNewWanderTarget()
     {
-        // 在當前位置附近隨機一個點
         Vector3 currentPos = GetFishPosition();
         Vector2 randomCircle = Random.insideUnitCircle * _wanderRadius;
         _wanderTarget = currentPos + new Vector3(randomCircle.x, 0, randomCircle.y);
-        _wanderTarget.y = currentPos.y; // 保持相同高度
+        _wanderTarget.y = currentPos.y;
     }
 
-    private void MoveToTarget(Vector3 target)
-    {
-        // 使用父類別的 MoveToPosition 方法來移動頭部節點
-        MoveToPosition(target);
-    }
-
-    /// <summary>
-    /// 尋找水草
-    /// </summary>
     protected override void FindTarget()
     {
         Vector3 fishPos = GetFishPosition();
@@ -227,13 +186,9 @@ public class HerbivoreFish : NPCFish
 
             if (eaten)
             {
-                Debug.Log($"{gameObject.name} 吃了一口水草！");
-
-                // 重置飢餓計時器
                 _hungerTimer = _hungerThreshold;
 
-                // 有機率吃飽就切換到休息狀態
-                if (Random.value > 0.5f) // 50% 機率吃飽
+                if (Random.value > 0.5f)
                 {
                     _currentTarget = null;
                     ChangeState(FishState.Resting);
@@ -242,7 +197,6 @@ public class HerbivoreFish : NPCFish
         }
         else
         {
-            // 水草沒了 清空目標
             _currentTarget = null;
             ChangeState(FishState.Seeking);
         }
@@ -252,14 +206,11 @@ public class HerbivoreFish : NPCFish
     {
         base.OnDrawGizmosSelected();
 
-        // 使用魚的實際位置
         Vector3 fishPos = Application.isPlaying ? GetFishPosition() : transform.position;
 
-        // 藍色圈：漫遊範圍
         Gizmos.color = Color.blue;
         Gizmos.DrawWireSphere(fishPos, _wanderRadius);
 
-        // 粉色球：當前漫遊目標
         if (_currentState == FishState.Wandering && Application.isPlaying)
         {
             Gizmos.color = Color.magenta;

@@ -78,6 +78,14 @@ MonoBehaviour:
   _autoFindBodyAnimation: 1
   _detectionRange: 5
   _eatRange: 1.5
+  _obstacleDetectDistance: 2
+  _avoidStrength: 2
+  _obstacleLayer:
+    serializedVersion: 2
+    m_Bits: 64
+  _rayCount: 5
+  _raySpreadAngle: 60
+  _smoothTime: 0.3
   _normalSpeed: 1
   _fleeSpeed: 2
   _fleeDistance: 3
@@ -87,7 +95,7 @@ MonoBehaviour:
   _alignmentWeight: 1
   _cohesionWeight: 1
   _separationDistance: 1
-  _wanderRadius: 10
+  _wanderInterval: 2
   _wanderStrength: 0.5
 --- !u!1 &145578929511269137
 GameObject:

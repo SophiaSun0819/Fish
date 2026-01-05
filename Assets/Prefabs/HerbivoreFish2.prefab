@@ -296,6 +296,14 @@ MonoBehaviour:
   _autoFindBodyAnimation: 1
   _detectionRange: 5
   _eatRange: 1.5
+  _obstacleDetectDistance: 2
+  _avoidStrength: 2
+  _obstacleLayer:
+    serializedVersion: 2
+    m_Bits: 64
+  _rayCount: 5
+  _raySpreadAngle: 60
+  _smoothTime: 0.3
   _idleTime: 2
   _wanderTime: 5
   _wanderRadius: 10
