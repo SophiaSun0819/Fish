@@ -1,6 +1,4 @@
 using UnityEngine;
-using UnityEngine.InputSystem.XR;
-using UnityEngine.Windows;
 using UnityEngine.InputSystem;
 
 /// <summary>
@@ -37,26 +35,25 @@ public class PlayerFishController : MonoBehaviour
     [SerializeField] private float _shrinkRate = 0.02f;
 
     [Header("跳躍旋轉設定")]
-    [SerializeField] private float _maxJumpRotation = 45f;  // 最大仰角
-    [SerializeField] private float _rotationSpeed = 5f;     // 旋轉速度
+    [SerializeField] private float _maxJumpRotation = 45f;
+    [SerializeField] private float _rotationSpeed = 5f;
 
     private Quaternion _targetRotation;
-    private float _currentPitch = 0f;  // 當前俯仰角
+    private float _currentPitch = 0f;
 
     [Header("音效")]
     public AudioSource eatNothingSFX;
     public AudioSource eatSeaweedSFX;
     public AudioSource jumpSFX;
-
-
+    public AudioSource deathSFX;
 
     private bool _isInPollutedWater = false;
     private bool _wasDiving = false;
     private float _verticalVelocity = 0f;
     private Vector2 _input;
+    private bool _isDead = false;
 
     private CharacterController _controller;
-
 
     void Start()
     {
@@ -64,7 +61,6 @@ public class PlayerFishController : MonoBehaviour
         if (_controller == null)
         {
             _controller = gameObject.AddComponent<CharacterController>();
-            // 設定碰撞器大小
             _controller.radius = 0.5f;
             _controller.height = 1f;
             _controller.center = Vector3.zero;
@@ -72,24 +68,22 @@ public class PlayerFishController : MonoBehaviour
         UpdateFishSize();
     }
 
-
-
     void Update()
     {
+        if (_isDead) return;
+
         _input = new Vector2(Input.GetAxis("Horizontal"), Input.GetAxis("Vertical"));
 
-        // 用 Move 取代直接修改 position
         float currentSpeed = Input.GetKey(KeyCode.LeftShift) ? _sprintSpeed : _moveSpeed;
         Vector3 moveDirection = transform.forward * _input.y * currentSpeed * Time.deltaTime;
 
         _controller.Move(moveDirection);
-
         transform.Rotate(Vector3.up, _input.x * _turnSpeed * Time.deltaTime);
 
         HandleDiving();
         UpdateFishRotation();
 
-        if (Input.GetKeyDown(KeyCode.C)) EatSeaweed();
+        if (Input.GetKeyDown(KeyCode.C)) TryEat();
 
         if (_isInPollutedWater)
         {
@@ -106,7 +100,6 @@ public class PlayerFishController : MonoBehaviour
 
         if (isDiving)
         {
-            // 潛水中
             verticalMove.y = -_diveSpeed * Time.deltaTime;
             if (currentY + verticalMove.y < _maxDiveDepth)
                 verticalMove.y = _maxDiveDepth - currentY;
@@ -116,20 +109,16 @@ public class PlayerFishController : MonoBehaviour
         }
         else
         {
-            // 沒有按空格
             if (_wasDiving)
             {
-                // 🔧 新增條件:只有在水面或水下才能跳
                 if (currentY <= _waterSurfaceY)
                 {
-                    // 剛放開空格,跳出水面
                     _verticalVelocity = _jumpOutSpeed;
                     _wasDiving = false;
                     if (jumpSFX != null) jumpSFX.Play();
                 }
                 else
                 {
-                    // 在空中放開空格,不觸發跳躍
                     _wasDiving = false;
                     _verticalVelocity = 0;
                 }
@@ -137,7 +126,6 @@ public class PlayerFishController : MonoBehaviour
 
             if (_verticalVelocity > 0)
             {
-                // 正在上升
                 verticalMove.y = _verticalVelocity * Time.deltaTime;
                 _verticalVelocity -= _gravity * Time.deltaTime;
 
@@ -149,7 +137,6 @@ public class PlayerFishController : MonoBehaviour
             }
             else if (currentY > _waterSurfaceY)
             {
-                // 在水面上方,需要下落
                 verticalMove.y = -_gravity * Time.deltaTime;
 
                 if (currentY + verticalMove.y <= _waterSurfaceY)
@@ -160,7 +147,6 @@ public class PlayerFishController : MonoBehaviour
             }
             else
             {
-                // 已經在水面或以下,保持在水面
                 verticalMove.y = _waterSurfaceY - currentY;
                 _verticalVelocity = 0;
             }
@@ -173,42 +159,64 @@ public class PlayerFishController : MonoBehaviour
     {
         float targetPitch = 0f;
 
-        // 根據垂直速度計算目標俯仰角
         if (_verticalVelocity > 0)
         {
-            // 向上跳 - 抬頭
             targetPitch = Mathf.Lerp(0, _maxJumpRotation, _verticalVelocity / _jumpOutSpeed);
         }
         else if (transform.position.y > _waterSurfaceY)
         {
-            // 在空中下落 - 低頭
             float fallSpeed = Mathf.Abs(_verticalVelocity);
             targetPitch = Mathf.Lerp(0, -_maxJumpRotation, fallSpeed / _jumpOutSpeed);
         }
         else if (Input.GetKey(KeyCode.Space))
         {
-            // 潛水中 - 低頭
             targetPitch = -_maxJumpRotation * 0.5f;
         }
         else
         {
-            // 在水面 - 水平
             targetPitch = 0f;
         }
 
-        // 平滑過渡到目標角度
         _currentPitch = Mathf.Lerp(_currentPitch, targetPitch, Time.deltaTime * _rotationSpeed);
-
-        // 應用旋轉 (保持當前的 Y 軸旋轉,只改變 X 軸)
         transform.localRotation = Quaternion.Euler(_currentPitch, transform.localEulerAngles.y, 0);
     }
 
-
-    private void EatSeaweed()
+    /// <summary>
+    /// 嘗試吃東西 (水草或比自己小的魚)
+    /// </summary>
+    private void TryEat()
     {
         Collider[] hitColliders = Physics.OverlapSphere(transform.position, _eatRange);
+        
         foreach (Collider col in hitColliders)
         {
+            IEdible edible = col.GetComponent<IEdible>();
+            
+            if (edible != null && edible.CanBeEaten())
+            {
+                BaseFish fish = col.GetComponent<BaseFish>();
+                if (fish != null)
+                {
+                    if (fish.GetSize() < _currentSize)
+                    {
+                        float nutrition = edible.OnEaten(transform);
+                        if (nutrition > 0)
+                        {
+                            if (eatSeaweedSFX != null) eatSeaweedSFX.Play();
+                            _currentSize = Mathf.Clamp(_currentSize + nutrition, _minSize, _maxSize);
+                            UpdateFishSize();
+                            Debug.Log($"吃掉了 {col.name}！當前大小: {_currentSize}");
+                            return;
+                        }
+                    }
+                    else
+                    {
+                        Debug.Log($"{col.name} 太大了，吃不下！");
+                    }
+                    continue;
+                }
+            }
+            
             Seaweed seaweed = col.GetComponent<Seaweed>();
             if (seaweed != null && seaweed.IsEatable())
             {
@@ -217,13 +225,14 @@ public class PlayerFishController : MonoBehaviour
                 {
                     _currentSize = Mathf.Clamp(_currentSize + _growthPerBite, _minSize, _maxSize);
                     UpdateFishSize();
-                    Debug.Log("小魚當前大小: " + _currentSize);
+                    Debug.Log("吃了水草！當前大小: " + _currentSize);
                     return;
                 }
             }
         }
+        
         if (eatNothingSFX != null) eatNothingSFX.Play();
-        Debug.Log("沒有水草可以吃！");
+        Debug.Log("附近沒有可以吃的東西！");
     }
 
     private void UpdateFishSize()
@@ -232,6 +241,28 @@ public class PlayerFishController : MonoBehaviour
     }
 
     public float GetCurrentSize() => _currentSize;
+
+    /// <summary>
+    /// 被肉食魚吃掉時呼叫
+    /// </summary>
+    public void OnBeingEaten(string eaterName)
+    {
+        if (_isDead) return;
+        
+        _isDead = true;
+        Debug.Log($"玩家被 {eaterName} 吃掉了！");
+        
+        if (deathSFX != null) deathSFX.Play();
+        
+        // 隱藏玩家
+        gameObject.SetActive(false);
+        
+        // 發送玩家死亡事件
+        if (GameEvents.Instance != null)
+        {
+            GameEvents.Instance.PlayerDied(eaterName);
+        }
+    }
 
     private void OnTriggerEnter(Collider other)
     {
