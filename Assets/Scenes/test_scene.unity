@@ -379,7 +379,7 @@ GameObject:
   - component: {fileID: 14993299}
   - component: {fileID: 14993298}
   - component: {fileID: 14993297}
-  m_Layer: 3
+  m_Layer: 6
   m_Name: PolyShape (3)
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -931,7 +931,7 @@ GameObject:
   - component: {fileID: 29394671}
   - component: {fileID: 29394670}
   - component: {fileID: 29394669}
-  m_Layer: 3
+  m_Layer: 6
   m_Name: PolyShape (8)
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -1835,7 +1835,7 @@ GameObject:
   - component: {fileID: 64673041}
   - component: {fileID: 64673040}
   - component: {fileID: 64673039}
-  m_Layer: 0
+  m_Layer: 6
   m_Name: floor (7)
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -2551,9 +2551,33 @@ PrefabInstance:
     serializedVersion: 3
     m_TransformParent: {fileID: 1211947089}
     m_Modifications:
+    - target: {fileID: 135216083074718444, guid: 1ac0be19522afc449ad40751505f56bd, type: 3}
+      propertyPath: m_Layer
+      value: 6
+      objectReference: {fileID: 0}
+    - target: {fileID: 373987188985007656, guid: 1ac0be19522afc449ad40751505f56bd, type: 3}
+      propertyPath: m_Layer
+      value: 6
+      objectReference: {fileID: 0}
+    - target: {fileID: 1396563802458382143, guid: 1ac0be19522afc449ad40751505f56bd, type: 3}
+      propertyPath: m_Layer
+      value: 6
+      objectReference: {fileID: 0}
+    - target: {fileID: 2493493212023760157, guid: 1ac0be19522afc449ad40751505f56bd, type: 3}
+      propertyPath: m_Layer
+      value: 6
+      objectReference: {fileID: 0}
     - target: {fileID: 5089772918295996582, guid: 1ac0be19522afc449ad40751505f56bd, type: 3}
       propertyPath: m_Name
       value: tube wall set (1)
+      objectReference: {fileID: 0}
+    - target: {fileID: 5089772918295996582, guid: 1ac0be19522afc449ad40751505f56bd, type: 3}
+      propertyPath: m_Layer
+      value: 6
+      objectReference: {fileID: 0}
+    - target: {fileID: 5373387454504308442, guid: 1ac0be19522afc449ad40751505f56bd, type: 3}
+      propertyPath: m_Layer
+      value: 6
       objectReference: {fileID: 0}
     - target: {fileID: 5674322073392102161, guid: 1ac0be19522afc449ad40751505f56bd, type: 3}
       propertyPath: m_LocalScale.z
@@ -2598,6 +2622,10 @@ PrefabInstance:
     - target: {fileID: 5674322073392102161, guid: 1ac0be19522afc449ad40751505f56bd, type: 3}
       propertyPath: m_LocalEulerAnglesHint.z
       value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 6192359163718703516, guid: 1ac0be19522afc449ad40751505f56bd, type: 3}
+      propertyPath: m_Layer
+      value: 6
       objectReference: {fileID: 0}
     m_RemovedComponents: []
     m_RemovedGameObjects: []
@@ -3724,7 +3752,7 @@ GameObject:
   - component: {fileID: 388591874}
   - component: {fileID: 388591873}
   - component: {fileID: 388591872}
-  m_Layer: 3
+  m_Layer: 6
   m_Name: PolyShape (4)
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -5784,7 +5812,7 @@ GameObject:
   - component: {fileID: 541589918}
   - component: {fileID: 541589917}
   - component: {fileID: 541589916}
-  m_Layer: 3
+  m_Layer: 6
   m_Name: PolyShape (13)
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -6171,7 +6199,7 @@ GameObject:
   - component: {fileID: 551498520}
   - component: {fileID: 551498519}
   - component: {fileID: 551498518}
-  m_Layer: 0
+  m_Layer: 6
   m_Name: PolyShape (3)
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -7131,7 +7159,7 @@ GameObject:
   - component: {fileID: 569109370}
   - component: {fileID: 569109369}
   - component: {fileID: 569109368}
-  m_Layer: 0
+  m_Layer: 6
   m_Name: floor (5)
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -7244,7 +7272,7 @@ GameObject:
   - component: {fileID: 589304756}
   - component: {fileID: 589304755}
   - component: {fileID: 589304754}
-  m_Layer: 0
+  m_Layer: 6
   m_Name: tube2 (1)
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -7529,7 +7557,7 @@ GameObject:
   - component: {fileID: 632036400}
   - component: {fileID: 632036399}
   - component: {fileID: 632036398}
-  m_Layer: 0
+  m_Layer: 6
   m_Name: floor (1)
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -7809,7 +7837,7 @@ GameObject:
   - component: {fileID: 652760580}
   - component: {fileID: 652760579}
   - component: {fileID: 652760578}
-  m_Layer: 3
+  m_Layer: 6
   m_Name: PolyShape (1)
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -8191,7 +8219,7 @@ GameObject:
   serializedVersion: 6
   m_Component:
   - component: {fileID: 662322830}
-  m_Layer: 0
+  m_Layer: 6
   m_Name: terrain
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -8347,7 +8375,7 @@ GameObject:
   - component: {fileID: 687964152}
   - component: {fileID: 687964151}
   - component: {fileID: 687964150}
-  m_Layer: 3
+  m_Layer: 6
   m_Name: PolyShape (2)
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -8978,7 +9006,7 @@ GameObject:
   - component: {fileID: 725884523}
   - component: {fileID: 725884522}
   - component: {fileID: 725884521}
-  m_Layer: 0
+  m_Layer: 6
   m_Name: water
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -10966,7 +10994,7 @@ GameObject:
   - component: {fileID: 964928104}
   - component: {fileID: 964928103}
   - component: {fileID: 964928102}
-  m_Layer: 0
+  m_Layer: 6
   m_Name: PolyShape (2)
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -11615,7 +11643,7 @@ GameObject:
   - component: {fileID: 997326590}
   - component: {fileID: 997326589}
   - component: {fileID: 997326588}
-  m_Layer: 0
+  m_Layer: 6
   m_Name: tube2 (2)
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -11725,7 +11753,7 @@ GameObject:
   - component: {fileID: 999510374}
   - component: {fileID: 999510373}
   - component: {fileID: 999510372}
-  m_Layer: 0
+  m_Layer: 6
   m_Name: floor (3)
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -13113,7 +13141,7 @@ GameObject:
   - component: {fileID: 1181974475}
   - component: {fileID: 1181974474}
   - component: {fileID: 1181974473}
-  m_Layer: 3
+  m_Layer: 6
   m_Name: PolyShape (7)
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -13633,7 +13661,7 @@ GameObject:
   serializedVersion: 6
   m_Component:
   - component: {fileID: 1211947089}
-  m_Layer: 0
+  m_Layer: 6
   m_Name: Enviroment
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -13686,7 +13714,7 @@ GameObject:
   - component: {fileID: 1214325593}
   - component: {fileID: 1214325592}
   - component: {fileID: 1214325591}
-  m_Layer: 3
+  m_Layer: 6
   m_Name: PolyShape (6)
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -14271,7 +14299,7 @@ GameObject:
   - component: {fileID: 1232484341}
   - component: {fileID: 1232484340}
   - component: {fileID: 1232484339}
-  m_Layer: 3
+  m_Layer: 6
   m_Name: PolyShape
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -14656,7 +14684,7 @@ GameObject:
   - component: {fileID: 1237289860}
   - component: {fileID: 1237289859}
   - component: {fileID: 1237289858}
-  m_Layer: 0
+  m_Layer: 6
   m_Name: floor (4)
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -14854,7 +14882,7 @@ GameObject:
   - component: {fileID: 1277194920}
   - component: {fileID: 1277194919}
   - component: {fileID: 1277194918}
-  m_Layer: 3
+  m_Layer: 6
   m_Name: PolyShape (11)
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -15241,7 +15269,7 @@ GameObject:
   - component: {fileID: 1301053431}
   - component: {fileID: 1301053430}
   - component: {fileID: 1301053429}
-  m_Layer: 0
+  m_Layer: 6
   m_Name: PolyShape (12)
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -16052,7 +16080,7 @@ GameObject:
   - component: {fileID: 1379662382}
   - component: {fileID: 1379662381}
   - component: {fileID: 1379662380}
-  m_Layer: 0
+  m_Layer: 6
   m_Name: PolyShape (5)
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -17819,7 +17847,7 @@ GameObject:
   - component: {fileID: 1472852218}
   - component: {fileID: 1472852217}
   - component: {fileID: 1472852216}
-  m_Layer: 0
+  m_Layer: 6
   m_Name: floor
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -18120,7 +18148,7 @@ GameObject:
   - component: {fileID: 1515825617}
   - component: {fileID: 1515825616}
   - component: {fileID: 1515825615}
-  m_Layer: 3
+  m_Layer: 6
   m_Name: PolyShape (9)
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -18581,7 +18609,7 @@ GameObject:
   - component: {fileID: 1541602433}
   - component: {fileID: 1541602432}
   - component: {fileID: 1541602431}
-  m_Layer: 0
+  m_Layer: 6
   m_Name: floor (2)
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -18696,7 +18724,7 @@ GameObject:
   - component: {fileID: 1563970774}
   - component: {fileID: 1563970773}
   - component: {fileID: 1563970772}
-  m_Layer: 0
+  m_Layer: 6
   m_Name: PolyShape (2)
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -19471,7 +19499,7 @@ GameObject:
   - component: {fileID: 1582190004}
   - component: {fileID: 1582190003}
   - component: {fileID: 1582190002}
-  m_Layer: 0
+  m_Layer: 6
   m_Name: PolyShape (2)
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -20439,7 +20467,7 @@ GameObject:
   - component: {fileID: 1661522405}
   - component: {fileID: 1661522404}
   - component: {fileID: 1661522403}
-  m_Layer: 0
+  m_Layer: 6
   m_Name: PolyShape (3)
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -21891,7 +21919,7 @@ GameObject:
   - component: {fileID: 1857325476}
   - component: {fileID: 1857325475}
   - component: {fileID: 1857325474}
-  m_Layer: 0
+  m_Layer: 6
   m_Name: floor (6)
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -22753,7 +22781,7 @@ GameObject:
   - component: {fileID: 1967245537}
   - component: {fileID: 1967245536}
   - component: {fileID: 1967245535}
-  m_Layer: 0
+  m_Layer: 6
   m_Name: PolyShape (1)
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -23366,7 +23394,7 @@ GameObject:
   - component: {fileID: 1970734480}
   - component: {fileID: 1970734479}
   - component: {fileID: 1970734478}
-  m_Layer: 0
+  m_Layer: 6
   m_Name: tube2
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -24634,7 +24662,7 @@ GameObject:
   - component: {fileID: 2140204198}
   - component: {fileID: 2140204197}
   - component: {fileID: 2140204196}
-  m_Layer: 0
+  m_Layer: 6
   m_Name: PolyShape
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -25330,7 +25358,7 @@ GameObject:
   - component: {fileID: 2143023171}
   - component: {fileID: 2143023170}
   - component: {fileID: 2143023169}
-  m_Layer: 3
+  m_Layer: 6
   m_Name: PolyShape (10)
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -25982,6 +26010,14 @@ MonoBehaviour:
   _autoFindBodyAnimation: 1
   _detectionRange: 5
   _eatRange: 1.5
+  _obstacleDetectDistance: 2
+  _avoidStrength: 2
+  _obstacleLayer:
+    serializedVersion: 2
+    m_Bits: 0
+  _rayCount: 5
+  _raySpreadAngle: 60
+  _smoothTime: 0.3
   _idleTime: 2
   _wanderTime: 5
   _wanderRadius: 10
@@ -26209,9 +26245,33 @@ PrefabInstance:
     serializedVersion: 3
     m_TransformParent: {fileID: 1211947089}
     m_Modifications:
+    - target: {fileID: 135216083074718444, guid: 1ac0be19522afc449ad40751505f56bd, type: 3}
+      propertyPath: m_Layer
+      value: 6
+      objectReference: {fileID: 0}
+    - target: {fileID: 373987188985007656, guid: 1ac0be19522afc449ad40751505f56bd, type: 3}
+      propertyPath: m_Layer
+      value: 6
+      objectReference: {fileID: 0}
+    - target: {fileID: 1396563802458382143, guid: 1ac0be19522afc449ad40751505f56bd, type: 3}
+      propertyPath: m_Layer
+      value: 6
+      objectReference: {fileID: 0}
+    - target: {fileID: 2493493212023760157, guid: 1ac0be19522afc449ad40751505f56bd, type: 3}
+      propertyPath: m_Layer
+      value: 6
+      objectReference: {fileID: 0}
     - target: {fileID: 5089772918295996582, guid: 1ac0be19522afc449ad40751505f56bd, type: 3}
       propertyPath: m_Name
       value: tube wall set
+      objectReference: {fileID: 0}
+    - target: {fileID: 5089772918295996582, guid: 1ac0be19522afc449ad40751505f56bd, type: 3}
+      propertyPath: m_Layer
+      value: 6
+      objectReference: {fileID: 0}
+    - target: {fileID: 5373387454504308442, guid: 1ac0be19522afc449ad40751505f56bd, type: 3}
+      propertyPath: m_Layer
+      value: 6
       objectReference: {fileID: 0}
     - target: {fileID: 5674322073392102161, guid: 1ac0be19522afc449ad40751505f56bd, type: 3}
       propertyPath: m_LocalPosition.x
@@ -26252,6 +26312,10 @@ PrefabInstance:
     - target: {fileID: 5674322073392102161, guid: 1ac0be19522afc449ad40751505f56bd, type: 3}
       propertyPath: m_LocalEulerAnglesHint.z
       value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 6192359163718703516, guid: 1ac0be19522afc449ad40751505f56bd, type: 3}
+      propertyPath: m_Layer
+      value: 6
       objectReference: {fileID: 0}
     m_RemovedComponents: []
     m_RemovedGameObjects: []
