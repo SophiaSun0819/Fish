@@ -5,6 +5,7 @@ TagManager:
   serializedVersion: 3
   tags:
   - PollutedWater
+  - Star
   layers:
   - Default
   - TransparentFX
