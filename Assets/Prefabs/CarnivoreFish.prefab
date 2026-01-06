@@ -657,6 +657,7 @@ GameObject:
   - component: {fileID: 7436593889133825721}
   - component: {fileID: 5726396031965214221}
   - component: {fileID: 3979026210543160153}
+  - component: {fileID: 1859536554861328220}
   m_Layer: 0
   m_Name: CarnivoreFish
   m_TagString: Untagged
@@ -740,6 +741,29 @@ MonoBehaviour:
   _wanderTime: 4
   _threatLevel: 1
   _aggroRange: 8
+--- !u!136 &1859536554861328220
+CapsuleCollider:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 6271978324700799107}
+  m_Material: {fileID: 0}
+  m_IncludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_ExcludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_LayerOverridePriority: 0
+  m_IsTrigger: 0
+  m_ProvidesContacts: 0
+  m_Enabled: 1
+  serializedVersion: 2
+  m_Radius: 0.8
+  m_Height: 1
+  m_Direction: 1
+  m_Center: {x: 0, y: 0, z: -0.4}
 --- !u!1 &6477172899315336133
 GameObject:
   m_ObjectHideFlags: 0
