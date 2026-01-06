@@ -10,7 +10,7 @@ public class GameManager : MonoBehaviour
     //public TextMeshPro scoreText;
     public TMPro.TextMeshProUGUI scoreText;
     
-    private int totalScore = 0;
+    public int totalScore = 0;
 
     void Awake()
     {

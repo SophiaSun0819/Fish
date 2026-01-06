@@ -5,7 +5,6 @@ public class PlayerCollecter : MonoBehaviour
 {
     public AudioClip collectSound;
     public GameObject collectEffect;
-
     private AudioSource audioSource;
 
     void Start()
@@ -48,6 +47,16 @@ public class PlayerCollecter : MonoBehaviour
 
             // 銷毀星星
             Destroy(star);
+
+            // 檢查是否達到10顆星星，啟動無敵狀態
+            if (GameManager.Instance != null && GameManager.Instance.GetScore() >= 10)
+            {
+                PlayerFishController fishController = GetComponent<PlayerFishController>();
+                if (fishController != null && !fishController.IsSuperMode())
+                {
+                    fishController.ActivateSuperMode();
+                }
+            }
         }
     }
 }
