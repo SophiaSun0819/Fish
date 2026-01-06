@@ -187,36 +187,32 @@ public class PlayerFishController : MonoBehaviour
     private void TryEat()
     {
         Collider[] hitColliders = Physics.OverlapSphere(transform.position, _eatRange);
-        
+
         foreach (Collider col in hitColliders)
         {
-            IEdible edible = col.GetComponent<IEdible>();
-            
-            if (edible != null && edible.CanBeEaten())
+            BaseFish fish = col.GetComponent<BaseFish>();
+            if (fish != null)
             {
-                BaseFish fish = col.GetComponent<BaseFish>();
-                if (fish != null)
+                if (fish.GetSize() < _currentSize)
                 {
-                    if (fish.GetSize() < _currentSize)
+                    IEdible edible = col.GetComponent<IEdible>();
+                    float nutrition = edible.OnEaten(transform);
+                    if (nutrition > 0)
                     {
-                        float nutrition = edible.OnEaten(transform);
-                        if (nutrition > 0)
-                        {
-                            if (eatSeaweedSFX != null) eatSeaweedSFX.Play();
-                            _currentSize = Mathf.Clamp(_currentSize + nutrition, _minSize, _maxSize);
-                            UpdateFishSize();
-                            Debug.Log($"吃掉了 {col.name}！當前大小: {_currentSize}");
-                            return;
-                        }
+                        if (eatSeaweedSFX != null) eatSeaweedSFX.Play();
+                        _currentSize = Mathf.Clamp(_currentSize + nutrition, _minSize, _maxSize);
+                        UpdateFishSize();
+                        Debug.Log($"吃掉了 {col.name}！當前大小: {_currentSize}");
+                        return;
                     }
-                    else
-                    {
-                        Debug.Log($"{col.name} 太大了，吃不下！");
-                    }
-                    continue;
                 }
+                else
+                {
+                    Debug.Log($"{col.name} 太大了，吃不下！");
+                }
+                continue;
             }
-            
+
             Seaweed seaweed = col.GetComponent<Seaweed>();
             if (seaweed != null && seaweed.IsEatable())
             {
@@ -230,7 +226,7 @@ public class PlayerFishController : MonoBehaviour
                 }
             }
         }
-        
+
         if (eatNothingSFX != null) eatNothingSFX.Play();
         Debug.Log("附近沒有可以吃的東西！");
     }
@@ -248,15 +244,15 @@ public class PlayerFishController : MonoBehaviour
     public void OnBeingEaten(string eaterName)
     {
         if (_isDead) return;
-        
+
         _isDead = true;
         Debug.Log($"玩家被 {eaterName} 吃掉了！");
-        
+
         if (deathSFX != null) deathSFX.Play();
-        
+
         // 隱藏玩家
         gameObject.SetActive(false);
-        
+
         // 發送玩家死亡事件
         if (GameEvents.Instance != null)
         {

@@ -11,6 +11,7 @@ GameObject:
   - component: {fileID: 8267439556753903210}
   - component: {fileID: 2271102622626009922}
   - component: {fileID: 4810045514917320645}
+  - component: {fileID: 7694325838943578943}
   m_Layer: 0
   m_Name: PreyFish
   m_TagString: Untagged
@@ -97,6 +98,29 @@ MonoBehaviour:
   _separationDistance: 1
   _wanderInterval: 2
   _wanderStrength: 0.5
+--- !u!136 &7694325838943578943
+CapsuleCollider:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 83342065680206557}
+  m_Material: {fileID: 0}
+  m_IncludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_ExcludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_LayerOverridePriority: 0
+  m_IsTrigger: 0
+  m_ProvidesContacts: 0
+  m_Enabled: 1
+  serializedVersion: 2
+  m_Radius: 0.4
+  m_Height: 0.5
+  m_Direction: 1
+  m_Center: {x: 0, y: 0, z: -0.2}
 --- !u!1 &145578929511269137
 GameObject:
   m_ObjectHideFlags: 0

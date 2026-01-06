@@ -229,6 +229,7 @@ GameObject:
   - component: {fileID: 1991746932171642396}
   - component: {fileID: 9079693559304301444}
   - component: {fileID: 3858066355187412048}
+  - component: {fileID: 3292633816760246740}
   m_Layer: 0
   m_Name: HerbivoreFish2
   m_TagString: Untagged
@@ -308,6 +309,29 @@ MonoBehaviour:
   _wanderTime: 5
   _wanderRadius: 10
   _hungerThreshold: 3
+--- !u!136 &3292633816760246740
+CapsuleCollider:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 3115484500494933254}
+  m_Material: {fileID: 0}
+  m_IncludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_ExcludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_LayerOverridePriority: 0
+  m_IsTrigger: 0
+  m_ProvidesContacts: 0
+  m_Enabled: 1
+  serializedVersion: 2
+  m_Radius: 0.8
+  m_Height: 1
+  m_Direction: 1
+  m_Center: {x: 0, y: 0, z: -0.4}
 --- !u!1 &3240652606022573973
 GameObject:
   m_ObjectHideFlags: 0
