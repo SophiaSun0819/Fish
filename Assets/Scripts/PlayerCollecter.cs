@@ -14,7 +14,7 @@ public class PlayerCollecter : MonoBehaviour
 
     void OnTriggerEnter(Collider other)
     {
-        // 檢測是否碰到星星
+        // ?????O?_?I???P?P
         if (other.CompareTag("Star"))
         {
             CollectStar(other.gameObject);
@@ -23,32 +23,32 @@ public class PlayerCollecter : MonoBehaviour
 
     void CollectStar(GameObject star)
     {
-        // 獲取星星組件
+        // ?????P?P????
         Star starComponent = star.GetComponent<Star>();
         if (starComponent != null)
         {
-            // 通知GameManager增加分數
+            // ?q??GameManager?W?[????
             if (GameManager.Instance != null)
             {
                 GameManager.Instance.AddScore(starComponent.pointValue);
             }
 
-            // 播放收集音效
+            // ????????????
             if (collectSound != null && audioSource != null)
             {
                 audioSource.PlayOneShot(collectSound);
             }
 
-            // 生成收集特效
+            // ?????????S??
             if (collectEffect != null)
             {
                 Instantiate(collectEffect, star.transform.position, Quaternion.identity);
             }
 
-            // 銷毀星星
+            // ?P???P?P
             Destroy(star);
 
-            // 檢查是否達到10顆星星，啟動無敵狀態
+            // ???d?O?_?F??10???P?P?A?????L?????A
             if (GameManager.Instance != null && GameManager.Instance.GetScore() >= 10)
             {
                 PlayerFishController fishController = GetComponent<PlayerFishController>();
@@ -56,6 +56,7 @@ public class PlayerCollecter : MonoBehaviour
                 {
                     fishController.ActivateSuperMode();
                 }
+                
             }
         }
     }

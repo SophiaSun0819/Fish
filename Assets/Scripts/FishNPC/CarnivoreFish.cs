@@ -207,12 +207,13 @@ public class CarnivoreFish : NPCFish, IDangerous
     private bool ShouldChasePlayer()
     {
         if (_playerTarget == null) return false;
+        if (_playerTarget.IsSuperMode()) return false; // 新增
         return _currentSize > _playerTarget.GetCurrentSize() + _sizeAdvantage;
     }
-
     private bool ShouldFleeFromPlayer()
     {
         if (_playerTarget == null) return false;
+        if (_playerTarget.IsSuperMode()) return true; // 新增
         return _playerTarget.GetCurrentSize() > _currentSize + _sizeAdvantage;
     }
 
@@ -253,6 +254,12 @@ public class CarnivoreFish : NPCFish, IDangerous
 
     public float Attack(Transform target)
     {
+
+        if (_playerTarget != null && _playerTarget.IsSuperMode())
+        {
+            ChangeState(CarnivoreState.Fleeing);
+            return 0f;
+        }
         PlayerFishController player = target.GetComponent<PlayerFishController>();
         if (player != null)
         {
