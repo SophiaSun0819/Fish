@@ -28,6 +28,12 @@ public class PlayerFishController : MonoBehaviour
     [SerializeField] private float _maxSize = 3f;
     [SerializeField] private float _growthPerBite = 0.05f;
 
+    [Header("體積影響設定")]
+    [SerializeField] private float _minSpeedMultiplier = 0.5f;
+    [SerializeField] private float _maxSpeedMultiplier = 1.5f;
+    [SerializeField] private float _minJumpMultiplier = 0.6f;
+    [SerializeField] private float _maxJumpMultiplier = 1.0f;
+
     [Header("吃東西設定")]
     [SerializeField] private float _eatRange = 2f;
 
@@ -37,6 +43,17 @@ public class PlayerFishController : MonoBehaviour
     [Header("跳躍旋轉設定")]
     [SerializeField] private float _maxJumpRotation = 45f;
     [SerializeField] private float _rotationSpeed = 5f;
+
+    [Header("無敵狀態設定")]
+    [SerializeField] private float _superSpeedMultiplier = 2f;
+    [SerializeField] private float _superJumpMultiplier = 2f;
+    [SerializeField] private float _superSizeMultiplier = 3f;
+    [SerializeField] private float _superStateDuration = 10f;
+
+
+    private FishBodyAnimation _bodyAnimation;  // 新增這行
+
+
 
     private Quaternion _targetRotation;
     private float _currentPitch = 0f;
@@ -55,6 +72,13 @@ public class PlayerFishController : MonoBehaviour
 
     private CharacterController _controller;
 
+    private float _currentSpeedMultiplier = 1f;
+    private float _currentJumpMultiplier = 1f;
+
+    private bool _isSuperMode = false;
+    private float _superModeTimer = 0f;
+    private float _originalSize = 1f;
+
     void Start()
     {
         _controller = GetComponent<CharacterController>();
@@ -65,6 +89,14 @@ public class PlayerFishController : MonoBehaviour
             _controller.height = 1f;
             _controller.center = Vector3.zero;
         }
+
+        _bodyAnimation = GetComponent<FishBodyAnimation>();
+        if (_bodyAnimation == null)
+        {
+            _bodyAnimation = GetComponentInChildren<FishBodyAnimation>();
+        }
+
+
         UpdateFishSize();
     }
 
@@ -72,13 +104,36 @@ public class PlayerFishController : MonoBehaviour
     {
         if (_isDead) return;
 
+        // 處理無敵狀態計時
+        if (_isSuperMode)
+        {
+            _superModeTimer -= Time.deltaTime;
+            if (_superModeTimer <= 0f)
+            {
+                DeactivateSuperMode();
+            }
+        }
+
         _input = new Vector2(Input.GetAxis("Horizontal"), Input.GetAxis("Vertical"));
 
-        float currentSpeed = Input.GetKey(KeyCode.LeftShift) ? _sprintSpeed : _moveSpeed;
-        Vector3 moveDirection = transform.forward * _input.y * currentSpeed * Time.deltaTime;
+        float baseSpeed = Input.GetKey(KeyCode.LeftShift) ? _sprintSpeed : _moveSpeed;
+        float adjustedSpeed = baseSpeed * _currentSpeedMultiplier;
+
+        // 無敵狀態額外加速
+        if (_isSuperMode)
+        {
+            adjustedSpeed *= _superSpeedMultiplier;
+        }
+
+        Vector3 moveDirection = transform.forward * _input.y * adjustedSpeed * Time.deltaTime;
 
         _controller.Move(moveDirection);
-        transform.Rotate(Vector3.up, _input.x * _turnSpeed * Time.deltaTime);
+
+        float adjustedTurnSpeed = _turnSpeed * _currentSpeedMultiplier;
+
+        
+
+        transform.Rotate(Vector3.up, _input.x * adjustedTurnSpeed * Time.deltaTime);
 
         HandleDiving();
         UpdateFishRotation();
@@ -113,7 +168,14 @@ public class PlayerFishController : MonoBehaviour
             {
                 if (currentY <= _waterSurfaceY)
                 {
-                    _verticalVelocity = _jumpOutSpeed;
+                    _verticalVelocity = _jumpOutSpeed * _currentJumpMultiplier;
+
+                    // 無敵狀態跳更高
+                    if (_isSuperMode)
+                    {
+                        _verticalVelocity *= _superJumpMultiplier;
+                    }
+
                     _wasDiving = false;
                     if (jumpSFX != null) jumpSFX.Play();
                 }
@@ -129,9 +191,17 @@ public class PlayerFishController : MonoBehaviour
                 verticalMove.y = _verticalVelocity * Time.deltaTime;
                 _verticalVelocity -= _gravity * Time.deltaTime;
 
-                if (currentY + verticalMove.y >= _waterSurfaceY + _jumpOutHeight)
+                float adjustedJumpHeight = _jumpOutHeight * _currentJumpMultiplier;
+
+                // 無敵狀態跳更高
+                if (_isSuperMode)
                 {
-                    verticalMove.y = (_waterSurfaceY + _jumpOutHeight) - currentY;
+                    adjustedJumpHeight *= _superJumpMultiplier;
+                }
+
+                if (currentY + verticalMove.y >= _waterSurfaceY + adjustedJumpHeight)
+                {
+                    verticalMove.y = (_waterSurfaceY + adjustedJumpHeight) - currentY;
                     _verticalVelocity = 0;
                 }
             }
@@ -161,12 +231,22 @@ public class PlayerFishController : MonoBehaviour
 
         if (_verticalVelocity > 0)
         {
-            targetPitch = Mathf.Lerp(0, _maxJumpRotation, _verticalVelocity / _jumpOutSpeed);
+            float adjustedJumpOutSpeed = _jumpOutSpeed * _currentJumpMultiplier;
+            if (_isSuperMode)
+            {
+                adjustedJumpOutSpeed *= _superJumpMultiplier;
+            }
+            targetPitch = Mathf.Lerp(0, _maxJumpRotation, _verticalVelocity / adjustedJumpOutSpeed);
         }
         else if (transform.position.y > _waterSurfaceY)
         {
             float fallSpeed = Mathf.Abs(_verticalVelocity);
-            targetPitch = Mathf.Lerp(0, -_maxJumpRotation, fallSpeed / _jumpOutSpeed);
+            float adjustedJumpOutSpeed = _jumpOutSpeed * _currentJumpMultiplier;
+            if (_isSuperMode)
+            {
+                adjustedJumpOutSpeed *= _superJumpMultiplier;
+            }
+            targetPitch = Mathf.Lerp(0, -_maxJumpRotation, fallSpeed / adjustedJumpOutSpeed);
         }
         else if (Input.GetKey(KeyCode.Space))
         {
@@ -193,7 +273,8 @@ public class PlayerFishController : MonoBehaviour
             BaseFish fish = col.GetComponent<BaseFish>();
             if (fish != null)
             {
-                if (fish.GetSize() < _currentSize)
+                // 無敵狀態可以吃任何魚，否則只能吃比自己小的魚
+                if (_isSuperMode || fish.GetSize() < _currentSize)
                 {
                     IEdible edible = col.GetComponent<IEdible>();
                     float nutrition = edible.OnEaten(transform);
@@ -208,7 +289,10 @@ public class PlayerFishController : MonoBehaviour
                 }
                 else
                 {
-                    Debug.Log($"{col.name} 太大了，吃不下！");
+                    if (!_isSuperMode)
+                    {
+                        Debug.Log($"{col.name} 太大了，吃不下！");
+                    }
                 }
                 continue;
             }
@@ -233,10 +317,74 @@ public class PlayerFishController : MonoBehaviour
 
     private void UpdateFishSize()
     {
-        transform.localScale = Vector3.one * _currentSize;
+        float displaySize = _currentSize;
+
+        // 無敵狀態體積變三倍
+        if (_isSuperMode)
+        {
+            displaySize *= _superSizeMultiplier;
+        }
+
+        transform.localScale = Vector3.one * displaySize;
+
+        float sizeRatio = Mathf.InverseLerp(_minSize, _maxSize, _currentSize);
+        _currentSpeedMultiplier = Mathf.Lerp(_maxSpeedMultiplier, _minSpeedMultiplier, sizeRatio);
+        _currentJumpMultiplier = Mathf.Lerp(_maxJumpMultiplier, _minJumpMultiplier, sizeRatio);
+
+        Debug.Log($"體積: {_currentSize:F2} | 速度倍率: {_currentSpeedMultiplier:F2} | 跳躍倍率: {_currentJumpMultiplier:F2}");
     }
 
     public float GetCurrentSize() => _currentSize;
+
+    /// <summary>
+    /// 啟動無敵狀態
+    /// </summary>
+    public void ActivateSuperMode()
+    {
+        if (_isSuperMode) return;
+
+        _isSuperMode = true;
+        _superModeTimer = _superStateDuration;
+        _originalSize = _currentSize;
+
+
+
+        UpdateFishSize();
+
+        if (_bodyAnimation != null)
+        {
+            _bodyAnimation.SetSegmentDistance(_bodyAnimation.GetSegmentDistance() * _superSizeMultiplier);
+        }
+
+
+        Debug.Log("★★★ 無敵狀態啟動！體積變三倍，可以吃掉所有魚！★★★");
+    }
+
+    /// <summary>
+    /// 取消無敵狀態
+    /// </summary>
+    private void DeactivateSuperMode()
+    {
+        _isSuperMode = false;
+        _superModeTimer = 0f;
+
+
+
+        UpdateFishSize();
+
+        if (_bodyAnimation != null)
+        {
+            _bodyAnimation.SetSegmentDistance(_bodyAnimation.GetSegmentDistance() / _superSizeMultiplier);
+        }
+
+
+        Debug.Log("無敵狀態結束，體積恢復正常");
+    }
+
+    /// <summary>
+    /// 檢查是否在無敵狀態
+    /// </summary>
+    public bool IsSuperMode() => _isSuperMode;
 
     /// <summary>
     /// 被肉食魚吃掉時呼叫
@@ -244,6 +392,13 @@ public class PlayerFishController : MonoBehaviour
     public void OnBeingEaten(string eaterName)
     {
         if (_isDead) return;
+
+        // 無敵狀態下不會被吃掉
+        if (_isSuperMode)
+        {
+            Debug.Log($"{eaterName} 試圖吃掉無敵狀態的玩家，但失敗了！");
+            return;
+        }
 
         _isDead = true;
         Debug.Log($"玩家被 {eaterName} 吃掉了！");
@@ -278,9 +433,15 @@ public class PlayerFishController : MonoBehaviour
         }
     }
 
+
+    
     private void OnDrawGizmosSelected()
     {
         Gizmos.color = Color.green;
         Gizmos.DrawWireSphere(transform.position, _eatRange);
     }
+
+    
+
+
 }

@@ -4,7 +4,7 @@ using UnityEngine;
 /// NPC 魚的抽象基礎類別
 /// 包含 AI 相關的共同功能、身體動畫整合、射線避障（帶平滑處理）
 /// </summary>
-public abstract class NPCFish : BaseFish
+public abstract class NPCFish : BaseFish, IEdible
 {
     [Header("身體動畫")]
     [SerializeField] protected FishBodyAnimation _bodyAnimation;
@@ -337,12 +337,12 @@ public abstract class NPCFish : BaseFish
         // 繪製避障射線
         float halfSpread = _raySpreadAngle / 2f;
         float angleStep = _rayCount > 1 ? _raySpreadAngle / (_rayCount - 1) : 0;
-        
+
         for (int i = 0; i < _rayCount; i++)
         {
             float angle = -halfSpread + (angleStep * i);
             Vector3 rayDirection = Quaternion.Euler(0, angle, 0) * forward;
-            
+
             RaycastHit hit;
             if (Physics.Raycast(gizmoPosition, rayDirection, out hit, _obstacleDetectDistance, _obstacleLayer))
             {
@@ -356,5 +356,30 @@ public abstract class NPCFish : BaseFish
                 Gizmos.DrawRay(gizmoPosition, rayDirection * _obstacleDetectDistance);
             }
         }
+    }
+
+
+        public virtual bool CanBeEaten()
+    {
+        return !_isDead;
+    }
+
+    public virtual float OnEaten(Transform eater)
+    {
+        if (_isDead) return 0f;
+
+        _isDead = true;
+        Debug.Log($"{gameObject.name} 被 {eater.name} 吃掉了！");
+
+        float nutrition = _currentSize * 0.1f;
+
+        if (GameManager.Instance != null)
+        {
+            GameManager.Instance.OnFishEaten();
+        }
+
+        Destroy(gameObject);
+
+        return nutrition;
     }
 }

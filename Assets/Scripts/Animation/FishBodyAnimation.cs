@@ -212,5 +212,12 @@ public class FishBodyAnimation : MonoBehaviour
             Gizmos.color = Color.blue;
             Gizmos.DrawRay(_segments[i].position, _segments[i].forward * 0.3f);
         }
+
+
+    }
+
+    public float GetSegmentDistance()
+    {
+        return _segmentDistance;
     }
 }
