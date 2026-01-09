@@ -282,7 +282,9 @@ public class PlayerFishController : MonoBehaviour
 
     private void TryEat()
     {
-        Collider[] hitColliders = Physics.OverlapSphere(transform.position, _eatRange);
+        // 無敵時吃的範圍也要跟著放大
+        float effectiveEatRange = _eatRange * (_isSuperMode ? _superSizeMultiplier : 1f);
+        Collider[] hitColliders = Physics.OverlapSphere(transform.position, effectiveEatRange);
 
         foreach (Collider col in hitColliders)
         {
@@ -336,10 +338,12 @@ public class PlayerFishController : MonoBehaviour
 
         if (_isSuperMode)
         {
-            displaySize *= _superSizeMultiplier;
+            displaySize = 1f * _superSizeMultiplier;  // 固定為初始大小(1)的3倍
         }
 
         transform.localScale = Vector3.one * displaySize;
+
+        
 
         float sizeRatio = Mathf.InverseLerp(_minSize, _maxSize, _currentSize);
         _currentSpeedMultiplier = Mathf.Lerp(_maxSpeedMultiplier, _minSpeedMultiplier, sizeRatio);
