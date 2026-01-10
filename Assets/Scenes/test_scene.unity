@@ -3524,6 +3524,18 @@ PrefabInstance:
       propertyPath: m_Name
       value: HerbivoreFish2 (7)
       objectReference: {fileID: 0}
+    - target: {fileID: 3858066355187412048, guid: 4b7a4149aa629472ab9d00a274cfb30f, type: 3}
+      propertyPath: _avoidStrength
+      value: 3
+      objectReference: {fileID: 0}
+    - target: {fileID: 3858066355187412048, guid: 4b7a4149aa629472ab9d00a274cfb30f, type: 3}
+      propertyPath: _obstacleLayer.m_Bits
+      value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: 3858066355187412048, guid: 4b7a4149aa629472ab9d00a274cfb30f, type: 3}
+      propertyPath: _obstacleDetectDistance
+      value: 3
+      objectReference: {fileID: 0}
     - target: {fileID: 9079693559304301444, guid: 4b7a4149aa629472ab9d00a274cfb30f, type: 3}
       propertyPath: _autoDetectSegments
       value: 1
@@ -16517,6 +16529,19 @@ PrefabInstance:
     m_AddedGameObjects: []
     m_AddedComponents: []
   m_SourcePrefab: {fileID: 100100000, guid: 1fff69b63fc31433189ea00da52397dc, type: 3}
+--- !u!134 &1331486974
+PhysicsMaterial:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_Name: 
+  serializedVersion: 2
+  m_DynamicFriction: 0.6
+  m_StaticFriction: 0.6
+  m_Bounciness: 0
+  m_FrictionCombine: 0
+  m_BounceCombine: 0
 --- !u!1 &1345104816
 GameObject:
   m_ObjectHideFlags: 0
@@ -26907,6 +26932,10 @@ PrefabInstance:
       propertyPath: m_Name
       value: HerbivoreFish2
       objectReference: {fileID: 0}
+    - target: {fileID: 3292633816760246740, guid: 4b7a4149aa629472ab9d00a274cfb30f, type: 3}
+      propertyPath: m_Material
+      value: 
+      objectReference: {fileID: 1331486974}
     - target: {fileID: 9079693559304301444, guid: 4b7a4149aa629472ab9d00a274cfb30f, type: 3}
       propertyPath: _autoDetectSegments
       value: 1
