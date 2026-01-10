@@ -15,16 +15,16 @@ public abstract class NPCFish : BaseFish, IEdible
     [SerializeField] protected float _eatRange = 1.5f;
 
     [Header("避障設定")]
-    [SerializeField] protected float _obstacleDetectDistance = 2f;
-    [SerializeField] protected float _avoidStrength = 2f;           // 降低預設值
+    [SerializeField] protected float _obstacleDetectDistance = 3f;
+    [SerializeField] protected float _avoidStrength = 3f;
     [SerializeField] protected LayerMask _obstacleLayer;
     [SerializeField] protected int _rayCount = 5;
     [SerializeField] protected float _raySpreadAngle = 60f;
-    [SerializeField] protected float _smoothTime = 0.3f;            // 平滑時間
+    [SerializeField] protected float _smoothTime = 0.3f;
 
     protected Transform _currentTarget;
     protected Transform _headTransform;
-    
+
     // 平滑用的變數
     private Vector3 _smoothedDirection;
     private Vector3 _directionVelocity;
@@ -33,12 +33,12 @@ public abstract class NPCFish : BaseFish, IEdible
     {
         base.Start();
         InitializeBodyAnimation();
-        
+
         if (_obstacleLayer == 0)
         {
             _obstacleLayer = LayerMask.GetMask("Default");
         }
-        
+
         // 初始化平滑方向
         _smoothedDirection = transform.forward;
     }
@@ -48,7 +48,7 @@ public abstract class NPCFish : BaseFish, IEdible
         if (_bodyAnimation == null && _autoFindBodyAnimation)
         {
             _bodyAnimation = GetComponent<FishBodyAnimation>();
-            
+
             if (_bodyAnimation == null)
             {
                 _bodyAnimation = GetComponentInChildren<FishBodyAnimation>();
@@ -69,7 +69,7 @@ public abstract class NPCFish : BaseFish, IEdible
     protected virtual void Update()
     {
         if (_isDead) return;
-        
+
         FindTarget();
         Move();
         TryEat();
@@ -99,12 +99,37 @@ public abstract class NPCFish : BaseFish, IEdible
 
     /// <summary>
     /// 設定魚的位置（移動頭部）
+    /// 帶碰撞檢測，防止穿牆
     /// </summary>
     protected void SetFishPosition(Vector3 position)
     {
         if (_headTransform != null)
         {
-            _headTransform.position = position;
+            // 計算移動方向和距離
+            Vector3 currentPos = _headTransform.position;
+            Vector3 direction = position - currentPos;
+            float distance = direction.magnitude;
+
+            // 如果移動距離很小，直接設定
+            if (distance < 0.001f)
+            {
+                _headTransform.position = position;
+                return;
+            }
+
+            // 檢查路徑上是否有障礙物
+            RaycastHit hit;
+            if (Physics.Raycast(currentPos, direction.normalized, out hit, distance, _obstacleLayer))
+            {
+                // 有障礙物，只移動到障礙物前面一點點
+                float safeDistance = Mathf.Max(0, hit.distance - 0.1f);
+                _headTransform.position = currentPos + direction.normalized * safeDistance;
+            }
+            else
+            {
+                // 沒有障礙物，安全移動
+                _headTransform.position = position;
+            }
         }
         else
         {
@@ -143,22 +168,22 @@ public abstract class NPCFish : BaseFish, IEdible
         Vector3 avoidDirection = Vector3.zero;
         Vector3 fishPos = GetFishPosition();
         Vector3 forward = GetFishRotation() * Vector3.forward;
-        
+
         float halfSpread = _raySpreadAngle / 2f;
         float angleStep = _rayCount > 1 ? _raySpreadAngle / (_rayCount - 1) : 0;
-        
+
         int hitCount = 0;
-        
+
         for (int i = 0; i < _rayCount; i++)
         {
             float angle = -halfSpread + (angleStep * i);
             Vector3 rayDirection = Quaternion.Euler(0, angle, 0) * forward;
-            
+
             RaycastHit hit;
             if (Physics.Raycast(fishPos, rayDirection, out hit, _obstacleDetectDistance, _obstacleLayer))
             {
                 float weight = 1f - (hit.distance / _obstacleDetectDistance);
-                
+
                 // 使用法線方向來計算閃避方向（更自然）
                 Vector3 avoidDir = Vector3.Reflect(rayDirection, hit.normal);
                 avoidDir.y = 0;
@@ -182,7 +207,7 @@ public abstract class NPCFish : BaseFish, IEdible
     {
         Vector3 fishPos = GetFishPosition();
         Vector3 forward = GetFishRotation() * Vector3.forward;
-        
+
         return Physics.Raycast(fishPos, forward, _obstacleDetectDistance, _obstacleLayer);
     }
 
@@ -192,9 +217,9 @@ public abstract class NPCFish : BaseFish, IEdible
     private Vector3 CalculateFinalDirection(Vector3 targetDirection)
     {
         targetDirection.y = 0;
-        
+
         Vector3 avoidDirection = CalculateAvoidDirection();
-        
+
         Vector3 desiredDirection;
         if (avoidDirection != Vector3.zero)
         {
@@ -208,9 +233,9 @@ public abstract class NPCFish : BaseFish, IEdible
 
         // 使用 SmoothDamp 平滑方向變化
         _smoothedDirection = Vector3.SmoothDamp(
-            _smoothedDirection, 
-            desiredDirection, 
-            ref _directionVelocity, 
+            _smoothedDirection,
+            desiredDirection,
+            ref _directionVelocity,
             _smoothTime
         ).normalized;
 
@@ -358,8 +383,7 @@ public abstract class NPCFish : BaseFish, IEdible
         }
     }
 
-
-        public virtual bool CanBeEaten()
+    public virtual bool CanBeEaten()
     {
         return !_isDead;
     }

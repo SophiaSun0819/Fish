@@ -34,7 +34,8 @@ public class PlayerFishController : MonoBehaviour
     [SerializeField] private float _maxJumpMultiplier = 1.0f;
 
     [Header("吃東西設定")]
-    [SerializeField] private float _eatRange = 2f;
+    [SerializeField] private float _eatRange = 3f;  // 提高基礎範圍
+    [SerializeField] private float _eatRangeMultiplierWhenSmall = 1.5f;  // 小魚時範圍加成
 
     [Header("縮小設定")]
     [SerializeField] private float _shrinkRate = 0.02f;
@@ -280,11 +281,36 @@ public class PlayerFishController : MonoBehaviour
         transform.localRotation = Quaternion.Euler(_currentPitch, transform.localEulerAngles.y, 0);
     }
 
+    /// <summary>
+    /// 嘗試吃東西（根據體型動態調整範圍，使用魚頭位置檢測）
+    /// </summary>
     private void TryEat()
     {
-        // 無敵時吃的範圍也要跟著放大
-        float effectiveEatRange = _eatRange * (_isSuperMode ? _superSizeMultiplier : 1f);
-        Collider[] hitColliders = Physics.OverlapSphere(transform.position, effectiveEatRange);
+        // 根據體型動態調整吃東西的範圍：小魚範圍比較大，大魚範圍比較小
+        float sizeRatio = Mathf.InverseLerp(_minSize, _maxSize, _currentSize);
+        float eatRangeMultiplier = Mathf.Lerp(_eatRangeMultiplierWhenSmall, 1f, sizeRatio);
+        float effectiveEatRange = _eatRange * eatRangeMultiplier;
+        
+        // 無敵時範圍再加倍
+        if (_isSuperMode)
+        {
+            effectiveEatRange *= _superSizeMultiplier;
+        }
+        
+        // 使用魚頭（嘴巴）位置做檢測，而不是 transform 中心
+        Vector3 mouthPosition = transform.position;
+        if (_bodyAnimation != null && _bodyAnimation.GetHead() != null)
+        {
+            // 有身體動畫：使用頭部位置，並稍微往前延伸
+            mouthPosition = _bodyAnimation.GetHead().position + _bodyAnimation.GetHead().forward * 0.3f;
+        }
+        else
+        {
+            // 沒有身體動畫：用魚前方位置
+            mouthPosition = transform.position + transform.forward * 0.5f;
+        }
+        
+        Collider[] hitColliders = Physics.OverlapSphere(mouthPosition, effectiveEatRange);
 
         foreach (Collider col in hitColliders)
         {
@@ -342,8 +368,6 @@ public class PlayerFishController : MonoBehaviour
         }
 
         transform.localScale = Vector3.one * displaySize;
-
-        
 
         float sizeRatio = Mathf.InverseLerp(_minSize, _maxSize, _currentSize);
         _currentSpeedMultiplier = Mathf.Lerp(_maxSpeedMultiplier, _minSpeedMultiplier, sizeRatio);
@@ -436,7 +460,28 @@ public class PlayerFishController : MonoBehaviour
 
     private void OnDrawGizmosSelected()
     {
+        // 顯示實際的吃東西範圍（根據體型動態調整）
+        float sizeRatio = Mathf.InverseLerp(_minSize, _maxSize, _currentSize);
+        float eatRangeMultiplier = Mathf.Lerp(_eatRangeMultiplierWhenSmall, 1f, sizeRatio);
+        float effectiveEatRange = _eatRange * eatRangeMultiplier;
+        
+        if (_isSuperMode)
+        {
+            effectiveEatRange *= _superSizeMultiplier;
+        }
+        
+        // 顯示嘴巴位置的檢測範圍
+        Vector3 mouthPosition = transform.position;
+        if (_bodyAnimation != null && _bodyAnimation.GetHead() != null)
+        {
+            mouthPosition = _bodyAnimation.GetHead().position + _bodyAnimation.GetHead().forward * 0.3f;
+        }
+        else
+        {
+            mouthPosition = transform.position + transform.forward * 0.5f;
+        }
+        
         Gizmos.color = Color.green;
-        Gizmos.DrawWireSphere(transform.position, _eatRange);
+        Gizmos.DrawWireSphere(mouthPosition, effectiveEatRange);
     }
 }
